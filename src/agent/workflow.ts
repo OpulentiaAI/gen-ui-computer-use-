@@ -115,7 +115,7 @@ export function createScoutWorkflow(
     any
   >({
     channels: {
-      // Merge incoming messages, guarding against undefined arrays
+      // Merge incoming messages, defaulting both sides to empty arrays
       chat_history: (left: BaseMessage[], right: BaseMessage[]) => [
         ...(left ?? []),
         ...(right ?? []),

@@ -1,4 +1,4 @@
-import { StateGraph, END } from "@langchain/langgraph";
+import { StateGraph, START, END } from "@langchain/langgraph";
 import { BaseMessage, HumanMessage } from "@langchain/core/messages";
 import type { DynamicStructuredTool } from "@langchain/core/tools";
 import type { Runnable } from "@langchain/core/runnables";
@@ -143,7 +143,7 @@ export function createScoutWorkflow(
   } as any);
   workflow.addNode("agent", (state: AgentState) => runAgent(state, agent));
   workflow.addNode("tools", executeToolsFactory(tools));
-  workflow.setEntryPoint("agent");
+  workflow.addEdge(START, "agent");
   workflow.addConditionalEdges("agent", shouldContinue, {
     continue: "tools",
     end: END,

@@ -44,7 +44,9 @@ export async function createScoutAgent(config: ScoutAgentConfig) {
 
   return prompt.pipe(model).pipe(
     new RunnableLambda({
-      func: (msg: any) => ({ tool_calls: msg.tool_calls }),
+      func: (msg: any) => ({
+        tool_calls: msg.tool_calls || [],
+      }),
     }),
   );
 }

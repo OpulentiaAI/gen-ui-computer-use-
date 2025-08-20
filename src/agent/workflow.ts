@@ -117,7 +117,7 @@ export function createScoutWorkflow(
     channels: {
       chat_history: (left: BaseMessage[], right: BaseMessage[]) => [
         ...(left ?? []),
-        ...right,
+        ...(right ?? []),
       ],
       agentOutcome: (
         _left: AgentOutcome | undefined,

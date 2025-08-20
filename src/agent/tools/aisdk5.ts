@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { DynamicStructuredTool } from "@langchain/core/tools";
-import { EnvironmentAPI } from "../environment";
+import { EnvironmentAPI, EnvironmentError } from "../environment";
 
 // =============================================================================
 // Scout Tools Schema Definition (AISDK5 Compliant)
@@ -507,31 +507,62 @@ export const ScoutTools = {
  * @param environmentApi - The service connecting to the AISDK5 runtime.
  */
 export function createAisdk5Tools(
-  environmentApi: EnvironmentAPI
+  environmentApi: EnvironmentAPI,
+  verboseLogging: boolean = false,
 ): DynamicStructuredTool[] {
   const tools: DynamicStructuredTool[] = [];
 
-  for (const [toolName, definition] of Object.entries(ScoutTools)) {
+  const MAX_OUTPUT_SIZE = 100000; // ~100k characters
+  const MAX_ERROR_INPUT_SIZE = 2000;
+
+  for (const toolName of Object.keys(ScoutTools) as Array<
+    keyof typeof ScoutTools
+  >) {
+    const definition = ScoutTools[toolName];
     const tool = new DynamicStructuredTool({
       name: toolName,
       description: definition.description,
-      schema: definition.parameters,
-      // The execution logic relies on the standardized AISDK5 environment API
+      schema: definition.parameters as any,
       func: async (input) => {
+        if (verboseLogging) {
+          console.log(
+            `[Agent Execution] Tool: ${toolName}, Input:`,
+            JSON.stringify(input, null, 2),
+          );
+        }
         try {
-          console.log(`[Agent] Executing AISDK5 tool: ${toolName}`, input);
-          // Call the execution environment service
           const result = await environmentApi.executeTool(toolName, input);
-
-          // LangChain expects string output from tools
-          return JSON.stringify(result);
-        } catch (error: any) {
-          // Return structured error information for the LLM to interpret and self-correct
+          let output = JSON.stringify(result);
+          if (output.length > MAX_OUTPUT_SIZE) {
+            output =
+              output.substring(0, MAX_OUTPUT_SIZE) +
+              "\n...[Output truncated due to size]";
+          }
+          if (verboseLogging) {
+            console.log(
+              `[Agent Result] Tool: ${toolName}, Output:`,
+              output.substring(0, 5000),
+            );
+          }
+          return output;
+        } catch (error: unknown) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          const errorDetails =
+            error instanceof EnvironmentError ? error.details : {};
+          console.error(
+            `[Agent Failure] Tool: ${toolName}, Error: ${errorMessage}`,
+          );
+          const truncatedInput = JSON.stringify(input).substring(
+            0,
+            MAX_ERROR_INPUT_SIZE,
+          );
           return JSON.stringify({
-            error: error.message,
+            error: errorMessage,
+            details: errorDetails,
             tool: toolName,
-            input,
-            status: 'FAILURE',
+            input: truncatedInput,
+            status: "FAILURE",
           });
         }
       },

@@ -11,9 +11,9 @@ You MUST use explicit Chain-of-Thought (CoT) reasoning for every turn. Format yo
 
 The thinking process must follow this structure:
 <thinking>
-1. Observe: Analyze the user's request and the current state (previous tool outputs, file system status, latest screenshot).
-2. Orient: Synthesize the information. Where am I in the plan? Did the last action succeed or fail?
-3. Decide: Formulate the plan for the next step(s). Identify opportunities for parallelization. If an error occurred, formulate a corrective strategy.
+1. Observe: Analyze the user's request and the current state. Critically examine the latest screenshot if present (multimodal input) and note tool outputs and file system status.
+2. Orient: Synthesize the information—both textual and visual. Where am I in the plan? Did the last action succeed or fail on-screen and in logs?
+3. Decide: Formulate the plan for the next step(s). Identify opportunities for parallelization. If an error occurred, formulate a corrective strategy based on the error details.
 4. Act (Selection): Determine the specific tool calls for this turn and justify their necessity and expected outcome.
 </thinking>
 

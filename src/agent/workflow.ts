@@ -105,7 +105,34 @@ export function createScoutWorkflow(
   agent: Runnable<{ chat_history: BaseMessage[] }, AgentOutcome>,
   tools: DynamicStructuredTool[],
 ) {
-  const workflow = new StateGraph<AgentState>({});
+  const workflow = new StateGraph<AgentState>({
+    channels: {
+      chat_history: (left: BaseMessage[], right: BaseMessage[]) => [
+        ...(left ?? []),
+        ...right,
+      ],
+      agentOutcome: (
+        _left: AgentOutcome | undefined,
+        right: AgentOutcome | undefined,
+      ) => right,
+      latest_screenshot: (
+        _left: string | undefined,
+        right: string | undefined,
+      ) => right,
+      current_ui_status: (
+        _left:
+          | { message: string; status: string; emoji: string }
+          | undefined,
+        right:
+          | { message: string; status: string; emoji: string }
+          | undefined,
+      ) => right,
+      current_todo_list: (
+        _left: Array<object> | undefined,
+        right: Array<object> | undefined,
+      ) => right,
+    },
+  } as any);
   workflow.addNode("agent", (state: AgentState) => runAgent(state, agent));
   workflow.addNode("tools", executeToolsFactory(tools));
   workflow.setEntryPoint("agent");

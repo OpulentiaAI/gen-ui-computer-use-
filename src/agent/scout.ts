@@ -44,6 +44,7 @@ export async function createScoutAgent(config: ScoutAgentConfig) {
 
   return prompt.pipe(model).pipe(
     new RunnableLambda({
+      // Default to an empty list when the model returns no tool calls
       func: (msg: any) => ({
         tool_calls: msg.tool_calls || [],
       }),

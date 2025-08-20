@@ -13,7 +13,7 @@ import { Checkpoint, Message } from "@langchain/langgraph-sdk";
 import { AssistantMessage, AssistantMessageLoading } from "./messages/ai";
 import { HumanMessage } from "./messages/human";
 import { DO_NOT_RENDER_ID_PREFIX } from "@/lib/constants";
-import { LangGraphLogoSVG } from "../icons/langgraph";
+import { OpulentLogo } from "../icons/opulent";
 import { TooltipIconButton } from "./tooltip-icon-button";
 import {
   ArrowDown,
@@ -143,9 +143,9 @@ function ChatView({
           <div className="sticky flex flex-col items-center gap-8 bottom-0 px-4 bg-white">
             {!chatStarted && (
               <div className="flex gap-3 items-center">
-                <LangGraphLogoSVG className="flex-shrink-0 h-8" />
+                <OpulentLogo className="flex-shrink-0 h-8" />
                 <h1 className="text-2xl font-semibold tracking-tight">
-                  Generative UI Computer Use
+                  Opulent Browser
                 </h1>
               </div>
             )}
@@ -407,9 +407,9 @@ export function Thread() {
                   damping: 30,
                 }}
               >
-                <LangGraphLogoSVG width={32} height={32} />
+                <OpulentLogo width={32} height={32} />
                 <span className="text-xl font-semibold tracking-tight">
-                  Generative UI Computer Use
+                  Opulent Browser
                 </span>
               </motion.button>
             </div>

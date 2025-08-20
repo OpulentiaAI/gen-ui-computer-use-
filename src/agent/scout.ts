@@ -1,6 +1,6 @@
 import { ChatOpenAI } from "@langchain/openai";
-import { createOpenAIToolsAgent } from "langchain/agents";
 import { ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
+import { RunnableLambda } from "@langchain/core/runnables";
 import { createAisdk5Tools } from "./tools/aisdk5";
 import { AISDK5_SYSTEM_PROMPT } from "./prompts/system";
 import { EnvironmentAPI } from "./environment";
@@ -35,13 +35,18 @@ export async function createScoutAgent(config: ScoutAgentConfig) {
     modelName,
     temperature,
     streaming: true,
-  });
+  }).bindTools(tools);
 
   const prompt = ChatPromptTemplate.fromMessages([
     ["system", AISDK5_SYSTEM_PROMPT],
     new MessagesPlaceholder("chat_history"),
-    new MessagesPlaceholder("agent_scratchpad"),
   ]);
 
-  return createOpenAIToolsAgent({ llm: model, tools, prompt });
+  return prompt.pipe(model).pipe(
+    new RunnableLambda({
+      func: (msg: any) => ({
+        tool_calls: msg.tool_calls || [],
+      }),
+    }),
+  );
 }

@@ -11,8 +11,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Generative UI CUA",
-  description: "Generative UI Computer Use Agent by LangChain",
+  title: "Opulent Browser",
+  description: "Opulent Browser by OpulentiaAI",
 };
 
 export default function RootLayout({

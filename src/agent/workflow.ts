@@ -135,7 +135,11 @@ export function createScoutWorkflow(
   } as any);
   workflow.addNode("agent", (state: AgentState) => runAgent(state, agent));
   workflow.addNode("tools", executeToolsFactory(tools));
-  workflow.setEntryPoint("agent");
+  // The new StateGraph API uses a special "__start__" node for entry.
+  // Create an edge from the start node to our first node.
+  // @ts-expect-error - "__start__" is a special internal node identifier.
+  workflow.addEdge("__start__", "agent");
+  // @ts-expect-error - Type defs expect "__start__", but conditional from "agent" is valid.
   workflow.addConditionalEdges("agent", shouldContinue, {
     continue: "tools",
     end: END,

@@ -96,6 +96,34 @@ function ChatView({
   handleRegenerate,
 }: ChatViewProps) {
   const stream = useStreamContext();
+  const { scrollToBottom, isAtBottom } = useStickToBottomContext();
+
+  // Ensure we scroll after submitting and when new content is appended
+  const handleFormSubmit = (e: FormEvent) => {
+    handleSubmit(e);
+    // Defer to after DOM updates
+    requestAnimationFrame(() => {
+      scrollToBottom();
+    });
+  };
+
+  // If we're already at the bottom, keep following when messages update
+  useEffect(() => {
+    if (isAtBottom) {
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    }
+  }, [stream.messages.length, isAtBottom, scrollToBottom]);
+
+  // When loading starts (and before first token), make sure the typing bubble stays in view
+  useEffect(() => {
+    if (stream.isLoading && !firstTokenReceived) {
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    }
+  }, [stream.isLoading, firstTokenReceived, scrollToBottom]);
 
   return (
     <StickToBottom
@@ -154,7 +182,7 @@ function ChatView({
 
             <div className="bg-muted rounded-2xl border shadow-xs mx-auto mb-8 w-full max-w-3xl relative z-10">
               <form
-                onSubmit={handleSubmit}
+                onSubmit={handleFormSubmit}
                 className="grid grid-rows-[1fr_auto] gap-2 max-w-3xl mx-auto"
               >
                 <textarea

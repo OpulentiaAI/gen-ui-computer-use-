@@ -1,4 +1,4 @@
-import { StateGraph, END } from "@langchain/langgraph";
+import { StateGraph, END, START } from "@langchain/langgraph";
 import { BaseMessage, HumanMessage } from "@langchain/core/messages";
 import type { DynamicStructuredTool } from "@langchain/core/tools";
 import type { Runnable } from "@langchain/core/runnables";
@@ -136,14 +136,14 @@ export function createScoutWorkflow(
   workflow.addNode("agent", (state: AgentState) => runAgent(state, agent));
   workflow.addNode("tools", executeToolsFactory(tools));
   // The new StateGraph API uses a special "__start__" node for entry.
-  // Create an edge from the start node to our first node.
-  // @ts-expect-error - "__start__" is a special internal node identifier.
-  workflow.addEdge("__start__", "agent");
-  // @ts-expect-error - Type defs expect "__start__", but conditional from "agent" is valid.
-  workflow.addConditionalEdges("agent", shouldContinue, {
+  // Create an edge from the special START node to our first node.
+  (workflow as any).addEdge(START, "agent");
+  // Conditional transition from agent depending on tool calls
+  (workflow as any).addConditionalEdges("agent", shouldContinue, {
     continue: "tools",
     end: END,
   });
-  workflow.addEdge("tools", "agent");
+  // Loop back from tools to agent
+  (workflow as any).addEdge("tools", "agent");
   return workflow.compile();
 }

@@ -1,4 +1,4 @@
-import { StateGraph, END } from "@langchain/langgraph";
+import { StateGraph, END, START } from "@langchain/langgraph";
 import { BaseMessage, HumanMessage } from "@langchain/core/messages";
 import type { DynamicStructuredTool } from "@langchain/core/tools";
 import type { Runnable } from "@langchain/core/runnables";
@@ -105,7 +105,7 @@ export function createScoutWorkflow(
   agent: Runnable<{ chat_history: BaseMessage[] }, AgentOutcome>,
   tools: DynamicStructuredTool[],
 ) {
-  const workflow = new StateGraph<AgentState>({
+  const builder = new StateGraph<AgentState>({
     channels: {
       chat_history: (left: BaseMessage[], right: BaseMessage[]) => [
         ...(left ?? []),
@@ -132,14 +132,14 @@ export function createScoutWorkflow(
         right: Array<object> | undefined,
       ) => right,
     },
-  } as any);
-  workflow.addNode("agent", (state: AgentState) => runAgent(state, agent));
-  workflow.addNode("tools", executeToolsFactory(tools));
-  workflow.setEntryPoint("agent");
-  workflow.addConditionalEdges("agent", shouldContinue, {
-    continue: "tools",
-    end: END,
-  });
-  workflow.addEdge("tools", "agent");
-  return workflow.compile();
+  } as any)
+    .addNode("agent", (state: AgentState) => runAgent(state, agent))
+    .addNode("tools", executeToolsFactory(tools))
+    .addEdge(START, "agent")
+    .addConditionalEdges("agent", shouldContinue, {
+      continue: "tools",
+      end: END,
+    })
+    .addEdge("tools", "agent");
+  return builder.compile();
 }

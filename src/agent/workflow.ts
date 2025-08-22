@@ -120,12 +120,8 @@ export function createScoutWorkflow(
         right: string | undefined,
       ) => right,
       current_ui_status: (
-        _left:
-          | { message: string; status: string; emoji: string }
-          | undefined,
-        right:
-          | { message: string; status: string; emoji: string }
-          | undefined,
+        _left: { message: string; status: string; emoji: string } | undefined,
+        right: { message: string; status: string; emoji: string } | undefined,
       ) => right,
       current_todo_list: (
         _left: Array<object> | undefined,

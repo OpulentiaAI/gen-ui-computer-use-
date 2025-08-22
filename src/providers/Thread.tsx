@@ -34,7 +34,7 @@ function getThreadSearchMetadata(
 }
 
 export function ThreadProvider({ children }: { children: ReactNode }) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "/api";
   const assistantId = "agent";
 
   const [threads, setThreads] = useState<Thread[]>([]);

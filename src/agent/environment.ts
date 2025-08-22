@@ -32,7 +32,7 @@ export interface HttpEnvironmentConfig {
  * remote AISDK5 runtime.
  */
 export class HttpEnvironment implements EnvironmentAPI {
-  private config: Required<Omit<HttpEnvironmentConfig, 'apiKey'>> & {
+  private config: Required<Omit<HttpEnvironmentConfig, "apiKey">> & {
     apiKey: string;
   };
 
@@ -42,7 +42,7 @@ export class HttpEnvironment implements EnvironmentAPI {
     }
     this.config = {
       baseUrl: config.baseUrl,
-      apiKey: config.apiKey || '',
+      apiKey: config.apiKey || "",
       timeoutMs: config.timeoutMs || 65000,
     };
   }
@@ -52,9 +52,9 @@ export class HttpEnvironment implements EnvironmentAPI {
 
     try {
       const response = await fetch(`${this.config.baseUrl}/tools/${tool}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...(this.config.apiKey
             ? { Authorization: `Bearer ${this.config.apiKey}` }
             : {}),
@@ -64,27 +64,31 @@ export class HttpEnvironment implements EnvironmentAPI {
       });
 
       let body: any;
-      const contentType = response.headers.get('content-type');
+      const contentType = response.headers.get("content-type");
       try {
-        if (contentType && contentType.includes('application/json')) {
+        if (contentType && contentType.includes("application/json")) {
           body = await response.json();
         } else {
           body = await response.text();
         }
       } catch (e) {
-        body = { error: 'Failed to parse response body from environment runtime' };
+        body = {
+          error: "Failed to parse response body from environment runtime",
+        };
       }
 
       if (!response.ok) {
         const errorMessage =
-          (body?.error || body?.message || String(body)) ||
+          body?.error ||
+          body?.message ||
+          String(body) ||
           `Environment call failed with status ${response.status}`;
         throw new EnvironmentError(String(errorMessage), response.status, body);
       }
 
       return body;
     } catch (error: any) {
-      if (error.name === 'TimeoutError' || error.name === 'AbortError') {
+      if (error.name === "TimeoutError" || error.name === "AbortError") {
         throw new EnvironmentError(
           `Request timed out after ${this.config.timeoutMs}ms`,
         );

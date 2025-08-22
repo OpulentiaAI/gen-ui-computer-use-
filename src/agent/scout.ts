@@ -1,6 +1,9 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { createOpenAIToolsAgent } from "langchain/agents";
-import { ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
+import {
+  ChatPromptTemplate,
+  MessagesPlaceholder,
+} from "@langchain/core/prompts";
 import { createAisdk5Tools } from "./tools/aisdk5";
 import { AISDK5_SYSTEM_PROMPT } from "./prompts/system";
 import { EnvironmentAPI } from "./environment";
@@ -18,8 +21,7 @@ export interface ScoutAgentConfig {
 export async function createScoutAgent(config: ScoutAgentConfig) {
   const verboseLogging =
     config.verboseLogging ?? process.env.AGENT_VERBOSE_LOGGING === "true";
-  const modelName =
-    config.modelName ?? process.env.AGENT_MODEL_NAME ?? "gpt-5";
+  const modelName = config.modelName ?? process.env.AGENT_MODEL_NAME ?? "gpt-5";
   const temperature =
     config.temperature ?? parseFloat(process.env.AGENT_TEMPERATURE || "0.1");
 

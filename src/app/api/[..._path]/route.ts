@@ -16,7 +16,7 @@ const notConfigured = async () =>
     {
       status: 500,
       headers: { "content-type": "application/json" },
-    }
+    },
   );
 
 const handlers = apiUrl

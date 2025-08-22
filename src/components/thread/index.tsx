@@ -76,6 +76,39 @@ function ScrollToBottom(props: { className?: string }) {
   );
 }
 
+// New: keep hook usage within StickToBottom subtree
+function AutoScroller({
+  isLoading,
+  firstTokenReceived,
+  messagesLength,
+}: {
+  isLoading: boolean;
+  firstTokenReceived: boolean;
+  messagesLength: number;
+}) {
+  const { scrollToBottom, isAtBottom } = useStickToBottomContext();
+
+  // If we're already at the bottom, keep following when messages update
+  useEffect(() => {
+    if (isAtBottom) {
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    }
+  }, [messagesLength, isAtBottom, scrollToBottom]);
+
+  // When loading starts (and before first token), make sure the typing bubble stays in view
+  useEffect(() => {
+    if (isLoading && !firstTokenReceived) {
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
+    }
+  }, [isLoading, firstTokenReceived, scrollToBottom]);
+
+  return null;
+}
+
 interface ChatViewProps {
   chatStarted: boolean;
   isShowingInstance: boolean;
@@ -96,34 +129,7 @@ function ChatView({
   handleRegenerate,
 }: ChatViewProps) {
   const stream = useStreamContext();
-  const { scrollToBottom, isAtBottom } = useStickToBottomContext();
-
-  // Ensure we scroll after submitting and when new content is appended
-  const handleFormSubmit = (e: FormEvent) => {
-    handleSubmit(e);
-    // Defer to after DOM updates
-    requestAnimationFrame(() => {
-      scrollToBottom();
-    });
-  };
-
-  // If we're already at the bottom, keep following when messages update
-  useEffect(() => {
-    if (isAtBottom) {
-      requestAnimationFrame(() => {
-        scrollToBottom();
-      });
-    }
-  }, [stream.messages.length, isAtBottom, scrollToBottom]);
-
-  // When loading starts (and before first token), make sure the typing bubble stays in view
-  useEffect(() => {
-    if (stream.isLoading && !firstTokenReceived) {
-      requestAnimationFrame(() => {
-        scrollToBottom();
-      });
-    }
-  }, [stream.isLoading, firstTokenReceived, scrollToBottom]);
+  // Removed direct useStickToBottomContext here to avoid usage outside provider during SSR
 
   return (
     <StickToBottom
@@ -132,6 +138,12 @@ function ChatView({
         chatStarted && isShowingInstance ? "flex-1" : "flex-1",
       )}
     >
+      {/* Auto scroll behaviors inside provider */}
+      <AutoScroller
+        isLoading={stream.isLoading}
+        firstTokenReceived={firstTokenReceived}
+        messagesLength={stream.messages.length}
+      />
       <StickyToBottomContent
         className={cn(
           "absolute inset-0 overflow-y-scroll [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-track]:bg-transparent",
@@ -182,7 +194,7 @@ function ChatView({
 
             <div className="bg-muted rounded-2xl border shadow-xs mx-auto mb-8 w-full max-w-3xl relative z-10">
               <form
-                onSubmit={handleFormSubmit}
+                onSubmit={handleSubmit}
                 className="grid grid-rows-[1fr_auto] gap-2 max-w-3xl mx-auto"
               >
                 <textarea
